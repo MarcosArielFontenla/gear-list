@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="backend/LoadoutQueue.Api.csproj" />
+  <Project Path="backend-tests/LoadoutQueue.Api.Tests.csproj" />
+</Solution>

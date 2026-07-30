@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#060d16" />
+    <title>Gear List · Sin conexión</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+        color: #f3f9fc;
+        background: radial-gradient(circle at 50% 0%, #173a55, #060d16 58%);
+      }
+      main {
+        width: min(100% - 40px, 520px);
+        padding: 42px;
+        border: 1px solid rgba(200, 224, 237, 0.2);
+        border-radius: 24px;
+        background: rgba(18, 35, 53, 0.72);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        text-align: center;
+      }
+      img { width: 72px; height: 72px; }
+      h1 { margin: 24px 0 10px; font-size: clamp(2rem, 8vw, 3rem); }
+      p { color: #c8e0ed; line-height: 1.6; }
+      a {
+        display: inline-block;
+        margin-top: 18px;
+        padding: 12px 18px;
+        color: #1a0e06;
+        border-radius: 999px;
+        background: #f2a062;
+        font-weight: 700;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/favicon.svg" alt="" />
+      <h1>Sin conexión</h1>
+      <p>
+        La aplicación no pudo abrirse todavía. Cuando recuperes conexión,
+        vuelve a Gear List para guardar una copia local.
+      </p>
+      <a href="/">Reintentar</a>
+    </main>
+  </body>
+</html>
