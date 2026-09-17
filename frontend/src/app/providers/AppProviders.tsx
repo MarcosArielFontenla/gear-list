@@ -6,6 +6,8 @@ import { NetworkProvider } from "../../pwa/offline/NetworkProvider";
 import { PwaProvider } from "../../pwa/service-worker/PwaProvider";
 import { shouldRetryRequest } from "../../shared/api/httpClient";
 
+import { ConfirmProvider } from "../../shared/components/ConfirmProvider";
+
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(
     () =>
@@ -24,7 +26,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <NetworkProvider>
         <PwaProvider>
           <ThemeProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <ConfirmProvider><AuthProvider>{children}</AuthProvider></ConfirmProvider>
           </ThemeProvider>
         </PwaProvider>
       </NetworkProvider>

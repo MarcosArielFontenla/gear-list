@@ -1339,7 +1339,8 @@ button:disabled,
 }
 
 .list-card footer {
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 16px;
   padding: 0;
   border: 0;
   font-size: 0.7rem;
@@ -1347,22 +1348,13 @@ button:disabled,
 }
 
 .list-card-open {
-  min-height: 38px;
-  margin-left: auto;
-  padding: 0 15px;
-  color: var(--glacier-200);
-  border-color: color-mix(in srgb, var(--glacier-400) 55%, var(--border));
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--glacier-500) 9%, var(--surface-soft));
-}
-
-.list-card-open:hover {
-  border-color: var(--glacier-400);
-  background: color-mix(in srgb, var(--glacier-500) 15%, var(--surface-soft));
-}
-
-.list-card-open svg {
-  width: 15px;
+  width: fit-content;
+  min-width: 132px;
+  min-height: 46px;
+  padding: 0 24px;
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  font-size: 0.9rem;
+  text-transform: none;
 }
 
 .summary-strip {
@@ -2434,4 +2426,72 @@ button:disabled,
   .form-actions .button {
     width: 100%;
   }
+}
+
+/* Animate UI Radix dialogs share the application's theme and modal stack. */
+.animated-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(3, 8, 14, 0.76);
+  backdrop-filter: blur(6px);
+}
+.animated-dialog-content {
+  position: fixed;
+  z-index: 151;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: min(720px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 28px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow);
+  outline: none;
+}
+.animated-dialog-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+.animated-dialog-content .modal-header { padding-right: 42px; }
+.confirmation-dialog {
+  display: grid;
+  width: min(480px, calc(100% - 32px));
+  gap: 24px;
+}
+.confirmation-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: var(--ember-400);
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+.confirmation-delete .confirmation-icon { color: #ef9a93; }
+.confirmation-purchase .confirmation-icon { color: var(--aurora-500); }
+.confirmation-dialog h2 {
+  margin: 0 0 10px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.65rem;
+  line-height: 1.15;
+}
+.confirmation-dialog p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.confirmation-dialog .form-actions { padding-top: 4px; }
+.confirmation-dialog .button-danger { background: #a33030; }
+.confirmation-dialog .button-danger:hover { background: #8f2525; }
+@media (max-width: 600px) {
+  .animated-dialog-content { padding: 24px 20px; }
+  .animated-dialog-close { top: 14px; right: 14px; }
 }

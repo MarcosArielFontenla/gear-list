@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: ".",
   testMatch: [
+    "confirmations.e2e.ts",
     "hover-artifact.e2e.ts",
     "mobile-responsive.e2e.ts",
     "password-recovery.e2e.ts",

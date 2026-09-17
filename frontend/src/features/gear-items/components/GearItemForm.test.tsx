@@ -1,3 +1,4 @@
+import { ConfirmProvider } from "../../../shared/components/ConfirmProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -28,7 +29,7 @@ vi.mock("../../../pwa/offline/NetworkProvider", () => ({
 describe("GearItemForm", () => {
   beforeEach(() => {
     create.mutateAsync.mockReset().mockResolvedValue({});
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+
   });
 
   afterEach(() => {
@@ -51,7 +52,8 @@ describe("GearItemForm", () => {
       screen.getByRole("button", { name: "Guardar accesorio" }),
     );
 
-    expect(window.confirm).toHaveBeenCalled();
+    expect(create.mutateAsync).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirmar compra" }));
     expect(create.mutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Protección ocular",
@@ -71,7 +73,7 @@ function createWrapper() {
   return function Wrapper({ children }: PropsWithChildren) {
     return (
       <QueryClientProvider client={queryClient}>
-        {children}
+        <ConfirmProvider>{children}</ConfirmProvider>
       </QueryClientProvider>
     );
   };

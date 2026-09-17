@@ -1,3 +1,4 @@
+import { useConfirm } from "../../../shared/components/ConfirmProvider";
 import { Archive, ArrowRight, Edit3, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -16,6 +17,7 @@ import { getOfflineQueryErrorMessage } from "../../../pwa/offline/offlineQuery";
 import { OperationFeedback } from "../../../shared/components/OperationFeedback";
 
 export function GearListsPage() {
+  const confirm = useConfirm();
   const lists = useGearLists();
   const { archive } = useGearListMutations();
   const { isOnline } = useNetwork();
@@ -26,7 +28,7 @@ export function GearListsPage() {
   } | null>(null);
 
   const handleArchive = async (list: GearList) => {
-    if (!window.confirm(`¿Archivar "${list.name}"?`)) {
+    if (!await confirm({ title: "¿Archivar lista?", description: `“${list.name}” dejará de aparecer entre tus listas activas.`, confirmLabel: "Archivar lista", intent: "archive" })) {
       return;
     }
     setFeedback(null);
@@ -129,7 +131,7 @@ export function GearListsPage() {
               <footer>
                 <span>Actualizada {formatDate(list.updatedAt)}</span>
                 <Link
-                  className="button button-secondary list-card-open"
+                  className="button button-primary list-card-open"
                   to={`/lists/${list.id}`}
                 >
                   Abrir <ArrowRight aria-hidden="true" />

@@ -179,6 +179,13 @@ and a `401 Unauthorized` from an authenticated query or mutation triggers one
 central refresh attempt. If that refresh fails, private query data is cleared
 and the router returns to login.
 
+Native browser confirmations for deleting accessories, archiving lists, and
+recording purchases are replaced by a shared Animate UI Radix Dialog. It uses
+Motion animations, follows the dark/light theme, and initially focuses Cancel.
+The existing form dialogs use the same Radix foundation to support stacked
+confirmations. Vendored Animate UI primitives and their license live in
+`frontend/src/shared/components/animate-ui`.
+
 Keyboard and assistive-technology support includes:
 
 - skip links and focus movement to the main landmark after navigation;

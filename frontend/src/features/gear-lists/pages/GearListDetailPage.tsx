@@ -1,3 +1,4 @@
+import { useConfirm } from "../../../shared/components/ConfirmProvider";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -17,6 +18,7 @@ import { getOfflineQueryErrorMessage } from "../../../pwa/offline/offlineQuery";
 import { OperationFeedback } from "../../../shared/components/OperationFeedback";
 
 export function GearListDetailPage() {
+  const confirm = useConfirm();
   const { listId = "" } = useParams();
   const { accessToken } = useAuth();
   const { isOnline } = useNetwork();
@@ -52,7 +54,7 @@ export function GearListDetailPage() {
   }
 
   const handleDelete = async (item: GearItemListResponse) => {
-    if (!window.confirm(`¿Eliminar "${item.name}" definitivamente?`)) {
+    if (!await confirm({ title: "¿Eliminar accesorio?", description: `Vas a eliminar “${item.name}” definitivamente. Esta acción no se puede deshacer.`, confirmLabel: "Eliminar accesorio", intent: "delete" })) {
       return;
     }
     setFeedback(null);

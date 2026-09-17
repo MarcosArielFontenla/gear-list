@@ -1,3 +1,4 @@
+import { useConfirm } from "../../../shared/components/ConfirmProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -72,6 +73,7 @@ export function GearItemForm({
   itemId: string | null;
   onClose: () => void;
 }) {
+  const confirm = useConfirm();
   const item = useGearItem(listId, itemId);
   const mutations = useGearItemMutations(listId);
   const { isOnline } = useNetwork();
@@ -131,7 +133,7 @@ export function GearItemForm({
     if (
       input.status === 4 &&
       item.data?.status !== 4 &&
-      !window.confirm("¿Confirmas que este accesorio fue comprado?")
+      !await confirm({ title: "¿Confirmar compra?", description: `“${input.name}” se marcará como comprado y se registrará en tu historial.`, confirmLabel: "Confirmar compra", intent: "purchase" })
     ) {
       return;
     }
