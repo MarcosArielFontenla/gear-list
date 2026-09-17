@@ -4,6 +4,8 @@ namespace LoadoutQueue.Api.Domain.Entities;
 
 public sealed class GearItem
 {
+    public ICollection<GearItemPhoto> Photos { get; set; } = new List<GearItemPhoto>();
+
     public Guid Id { get; set; }
 
     public Guid GearListId { get; set; }

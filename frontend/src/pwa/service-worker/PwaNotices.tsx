@@ -1,16 +1,10 @@
-import { Download, RefreshCw, X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { usePwa } from "./PwaProvider";
 
 export function PwaNotices() {
-  const {
-    offlineReady,
-    needRefresh,
-    applyUpdate,
-    dismissOfflineReady,
-    dismissUpdate,
-  } = usePwa();
+  const { offlineReady, dismissOfflineReady } = usePwa();
 
-  if (!offlineReady && !needRefresh) {
+  if (!offlineReady) {
     return null;
   }
 
@@ -31,32 +25,6 @@ export function PwaNotices() {
           >
             <X aria-hidden="true" />
           </button>
-        </div>
-      )}
-      {needRefresh && (
-        <div className="pwa-notice glass" role="status">
-          <RefreshCw aria-hidden="true" />
-          <span>
-            <strong>Nueva versión disponible</strong>
-            Actualiza cuando estés listo para aplicar los cambios.
-          </span>
-          <div className="pwa-notice-actions">
-            <button
-              className="text-link"
-              onClick={() => void applyUpdate()}
-              type="button"
-            >
-              Actualizar
-            </button>
-            <button
-              aria-label="Más tarde"
-              className="mini-action"
-              onClick={dismissUpdate}
-              type="button"
-            >
-              <X aria-hidden="true" />
-            </button>
-          </div>
         </div>
       )}
     </div>

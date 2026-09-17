@@ -373,7 +373,7 @@ Stages 1 through 9 include:
   offline state, totals, reordering, and query invalidation;
 - generated manifest, standalone metadata, app icons, local fonts, app-shell
   precaching, offline fallback, and service worker;
-- controlled update notification and browser installation prompt;
+- automatic PWA updates (on launch, return to the app, reconnection, and every minute while visible) and browser installation prompt;
 - centralized API health probing, offline/reconnection banners, and refetch on
   reconnect;
 - Dexie snapshots isolated by user for dashboard, lists, accessories,
@@ -409,5 +409,71 @@ discovery, and interfaces without a concrete substitution need.
 
 The MVP roadmap is complete. Possible later capabilities include shared lists,
 offline writes with an explicit conflict policy, notifications, price history,
-attachments, and deployment automation. They are intentionally outside the
+other file attachments, and deployment automation. They are intentionally outside the
 current architecture until a concrete requirement justifies them.
+
+### Automatic frontend updates
+
+The website and installed PWA activate new versions and reload automatically after the service worker downloads the new assets. No update button is required. Checks run when the app is opened or resumed, when connectivity returns, and every minute while visible and online. Offline devices keep their cached version until they reconnect. Activation waits while a dialog is open. Reloads also wait for active editors, even if another tab activates the worker. Authentication forms block reloads while dirty or submitting. Existing installations using the previous manual-update code may need one final manual update to adopt this behavior.
+
+## Product photo galleries
+
+Products support up to six ordered photos. The first is the cover. The editor
+accepts JPG, PNG and WebP files (12 MB each, at most 40 megapixels), supports
+multiple selection and drag/drop, and retains files when saving fails.
+HEIC files must be exported as JPG before selection.
+
+The API checks ownership before reading an upload, validates actual image
+signatures, corrects orientation, strips metadata, preserves aspect ratio and
+generates WebP images up to 1600 px and thumbnails up to 320 px. Original files
+are not retained. Image decoding is serialized to bound memory pressure.
+
+- `POST /api/gear-lists/{listId}/items/with-photos` creates a product and gallery.
+- `PUT /api/gear-lists/{listId}/items/{itemId}/with-photos` saves both using the
+  product's optimistic concurrency version.
+- Multipart fields: JSON `input`, JSON `photoOrder`, and repeated `photos`
+  files. Existing photo IDs and `new-0`, `new-1`, etc. define the order.
+  `legacy` preserves an existing image URL as a gallery photo.
+- `GET /api/gear-lists/{listId}/items/{itemId}/photos` checks the owner and returns
+  temporary signed URLs. It is not publicly cached.
+
+Postgres stores metadata in `GearItemPhotos`; Railway's private S3 bucket stores
+the files. Images are fetched directly using one-hour signed URLs. The UI
+refreshes those URLs and uses thumbnails on the list. Existing external image
+URLs remain compatible and are not downloaded by the server.
+
+Storage writes are recoverable: pending cleanup is recorded before uploading.
+A successful transaction removes those recovery records. Removed photos and
+deleted products queue their object keys for deletion. A background worker
+retries cleanup every minute; interrupted uploads become eligible after one
+hour. Referenced photos are never removed by cleanup.
+
+Configure these variables only on `gear-list-api`:
+
+| Variable | Bucket credential |
+| --- | --- |
+| `Photos__Endpoint` | `endpoint` |
+| `Photos__Bucket` | `bucketName` |
+| `Photos__Region` | `region` (Railway: `auto`) |
+| `Photos__AccessKey` | `accessKeyId` |
+| `Photos__SecretKey` | `secretAccessKey` |
+
+The `gear-list-photos` bucket is configured in Railway (US East).
+Without storage credentials, regular product operations still work; new image
+uploads return a clear unavailable response. Credentials never reach the
+frontend. Deploy the API migrations before deploying the gallery frontend.
+
+The detail dialog opens from the product name or thumbnail and supports an
+expanded gallery, keyboard navigation and touch swipes. Photos are not added to
+the offline database; offline image availability depends on the browser cache.
+
+### Verification
+
+Run `npm test` and `npm run test:e2e` in `frontend`. After `npm run build`,
+run `node scripts/check-pwa-update.mjs` to exercise real service worker updates
+and preserve drafts when another tab activates a new version.
+
+Backend tests use Testcontainers by default. If Docker is unavailable,
+`GEAR_LIST_TEST_CONNECTION` may point to a temporary local PostgreSQL database
+whose name ends in `_tests`; then run `dotnet test backend-tests`. The test
+fixture rejects non-local connections.

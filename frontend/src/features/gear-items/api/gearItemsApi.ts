@@ -82,3 +82,21 @@ export function deleteGearItem(
     { method: "DELETE", accessToken },
   );
 }
+
+export function saveGearItemWithPhotos(
+  listId: string, itemId: string | null, input: GearItemInput | UpdateGearItemInput,
+  photos: import("../hooks/useGearItemPhotos").PhotoDraft[], accessToken: string,
+) {
+  const body = new FormData();
+  body.append("input", JSON.stringify(input));
+  let fileIndex = 0;
+  body.append("photoOrder", JSON.stringify(photos.map(photo => {
+    if (!photo.file) return photo.id;
+    body.append("photos", photo.file);
+    return "new-" + fileIndex++;
+  })));
+  return apiRequest<GearItemDetailResponse>(
+    `/api/gear-lists/${listId}/items/${itemId ? itemId + "/" : ""}with-photos`,
+    { method: itemId ? "PUT" : "POST", accessToken, body },
+  );
+}

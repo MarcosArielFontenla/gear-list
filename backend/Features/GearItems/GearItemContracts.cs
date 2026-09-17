@@ -49,7 +49,8 @@ public sealed record GearItemListResponse(
     int Position,
     DateTimeOffset UpdatedAt,
     DateTimeOffset? PurchasedAt,
-    Guid Version);
+    Guid Version,
+    int PhotoCount = 0);
 
 public sealed record GearItemDetailResponse(
     Guid Id,
@@ -69,7 +70,8 @@ public sealed record GearItemDetailResponse(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     DateTimeOffset? PurchasedAt,
-    Guid Version);
+    Guid Version,
+    int PhotoCount = 0);
 
 public sealed record GearItemConflictResponse(
     string Message,

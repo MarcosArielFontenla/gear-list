@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useRegisterSW } from "virtual:pwa-register/react";
+import { registerAppWorker } from "./registerAppWorker";
 
 type InstallChoice = {
   outcome: "accepted" | "dismissed";
@@ -23,11 +23,8 @@ type PwaContextValue = {
   canInstall: boolean;
   isInstalled: boolean;
   offlineReady: boolean;
-  needRefresh: boolean;
   install: () => Promise<boolean>;
-  applyUpdate: () => Promise<void>;
   dismissOfflineReady: () => void;
-  dismissUpdate: () => void;
 };
 
 const PwaContext = createContext<PwaContextValue | null>(null);
@@ -36,29 +33,11 @@ export function PwaProvider({ children }: PropsWithChildren) {
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(isStandalone);
-  const [registration, setRegistration] =
-    useState<ServiceWorkerRegistration | null>(null);
-  const {
-    offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    immediate: true,
-    onRegisteredSW: (_url, registration) => {
-      setRegistration(registration ?? null);
-    },
-  });
-
+  const [offlineReady, setOfflineReady] = useState(false);
   useEffect(() => {
-    if (!registration) {
-      return;
-    }
-    const interval = window.setInterval(
-      () => void registration.update().catch(() => undefined),
-      60 * 60 * 1_000,
-    );
-    return () => window.clearInterval(interval);
-  }, [registration]);
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+    return registerAppWorker(() => setOfflineReady(true));
+  }, []);
 
   useEffect(() => {
     const handleInstallPrompt = (event: Event) => {
@@ -94,24 +73,10 @@ export function PwaProvider({ children }: PropsWithChildren) {
       canInstall: Boolean(installPrompt),
       isInstalled,
       offlineReady,
-      needRefresh,
       install,
-      applyUpdate: async () => {
-        await updateServiceWorker(true);
-      },
       dismissOfflineReady: () => setOfflineReady(false),
-      dismissUpdate: () => setNeedRefresh(false),
     }),
-    [
-      install,
-      installPrompt,
-      isInstalled,
-      needRefresh,
-      offlineReady,
-      setNeedRefresh,
-      setOfflineReady,
-      updateServiceWorker,
-    ],
+    [install, installPrompt, isInstalled, offlineReady, setOfflineReady],
   );
 
   return <PwaContext.Provider value={value}>{children}</PwaContext.Provider>;

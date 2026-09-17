@@ -190,6 +190,8 @@ builder.Services
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<GearItemReorderService>();
 builder.Services.AddScoped<GearItemService>();
+builder.Services.AddSingleton<IPhotoStorage, S3PhotoStorage>();
+builder.Services.AddHostedService<PhotoCleanupWorker>();
 builder.Services.AddScoped<GearListService>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
@@ -314,6 +316,7 @@ app.MapHealthChecks(
 app.MapAuthenticationEndpoints();
 app.MapDashboardEndpoints();
 app.MapGearItemEndpoints();
+app.MapGearItemPhotoEndpoints();
 app.MapGearListEndpoints();
 
 app.Run();

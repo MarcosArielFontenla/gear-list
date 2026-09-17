@@ -1,6 +1,8 @@
+import { PhotoEditor } from "./PhotoEditor";
+import { useGearItemPhotos, type PhotoDraft } from "../hooks/useGearItemPhotos";
 import { useConfirm } from "../../../shared/components/ConfirmProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { getApiErrorMessage } from "../../../shared/api/httpClient";
@@ -75,6 +77,9 @@ export function GearItemForm({
 }) {
   const confirm = useConfirm();
   const item = useGearItem(listId, itemId);
+  const photoQuery = useGearItemPhotos(listId, itemId, Boolean(item.data?.photoCount));
+  const [photos, setPhotos] = useState<PhotoDraft[] | null>(itemId ? null : []);
+  const initialized = useRef(false);
   const mutations = useGearItemMutations(listId);
   const { isOnline } = useNetwork();
   const [apiError, setApiError] = useState<string | null>(null);
@@ -95,6 +100,8 @@ export function GearItemForm({
       return;
     }
 
+    if (initialized.current) return;
+    initialized.current = true;
     reset({
       name: item.data.name,
       description: item.data.description ?? "",
@@ -110,12 +117,23 @@ export function GearItemForm({
     });
   }, [item.data, reset]);
 
+  useEffect(() => {
+    if (photos !== null || !item.data) return;
+    if (item.data.photoCount && !photoQuery.data) return;
+    setPhotos([
+      ...(photoQuery.data ?? []).map(photo => ({ id: photo.id, url: photo.thumbnailUrl })),
+      ...(item.data.imageUrl ? [{ id: "legacy", url: item.data.imageUrl }] : []),
+    ]);
+  }, [photos, item.data, photoQuery.data]);
+
   const selectedStatus = Number(watch("status")) as PurchaseStatus;
   const isSaving =
     isSubmitting ||
     mutations.create.isPending ||
-    mutations.update.isPending;
+    mutations.update.isPending ||
+    mutations.saveWithPhotos.isPending;
   const onSubmit = handleSubmit(async (values) => {
+    if (photos === null) return;
     const input: GearItemInput = {
       name: values.name,
       description: toNullable(values.description),
@@ -125,7 +143,7 @@ export function GearItemForm({
       estimatedPrice: toPrice(values.estimatedPrice),
       actualPrice: toPrice(values.actualPrice),
       productUrl: toNullable(values.productUrl),
-      imageUrl: toNullable(values.imageUrl),
+      imageUrl: photos.some(photo => photo.id === "legacy") ? toNullable(values.imageUrl) : null,
       storeName: toNullable(values.storeName),
       notes: toNullable(values.notes),
     };
@@ -140,7 +158,9 @@ export function GearItemForm({
 
     setApiError(null);
     try {
-      if (itemId && item.data) {
+      if (photos.length > 0 || item.data?.photoCount || item.data?.imageUrl) {
+        await mutations.saveWithPhotos.mutateAsync({ itemId, photos, input: itemId && item.data ? { ...input, version: item.data.version } : input });
+      } else if (itemId && item.data) {
         await mutations.update.mutateAsync({
           itemId,
           input: { ...input, version: item.data.version },
@@ -158,7 +178,7 @@ export function GearItemForm({
     <Modal
       title={itemId ? "Editar accesorio" : "Nuevo accesorio"}
       description="Define el producto, su prioridad y el estado de compra."
-      onClose={onClose}
+      onClose={() => { if (!isSaving) onClose(); }}
     >
       {itemId && item.isPending ? (
         <LoadingState label="Cargando accesorio..." />
@@ -260,30 +280,22 @@ export function GearItemForm({
               />
               {errors.productUrl && <small id="gear-item-product-url-error" role="alert">{errors.productUrl.message}</small>}
             </label>
-            <label className="field field-span-2">
-              <span>URL de imagen</span>
-              <input
-                aria-describedby={errors.imageUrl ? "gear-item-image-url-error" : undefined}
-                aria-invalid={Boolean(errors.imageUrl)}
-                inputMode="url"
-                placeholder="https://..."
-                type="url"
-                {...register("imageUrl")}
-              />
-              {errors.imageUrl && <small id="gear-item-image-url-error" role="alert">{errors.imageUrl.message}</small>}
-            </label>
+            {photos !== null ? <PhotoEditor photos={photos} onChange={setPhotos} disabled={isSaving || !isOnline} />
+              : photoQuery.isError ? <div className="field-span-2"><ErrorState message="No pudimos cargar las fotos. Reintenta antes de guardar."
+                onRetry={() => void photoQuery.refetch()} /></div>
+              : <p className="field-span-2" role="status">Cargando fotos...</p>}
             <label className="field field-span-2">
               <span>Notas</span>
               <textarea rows={3} {...register("notes")} />
             </label>
           </div>
           <div className="form-actions">
-            <button className="button button-secondary" onClick={onClose} type="button">
+            <button className="button button-secondary" disabled={isSaving} onClick={onClose} type="button">
               Cancelar
             </button>
             <button
               className="button button-primary"
-              disabled={!isOnline || isSaving}
+              disabled={!isOnline || isSaving || photos === null}
               title={!isOnline ? "Esta acción requiere conexión." : undefined}
               type="submit"
             >

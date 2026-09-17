@@ -1,18 +1,23 @@
-import { useRef, type PropsWithChildren } from "react";
+import { useUpdateBlocker } from "../../pwa/service-worker/updateBlocker";
+import { useRef, type KeyboardEventHandler, type PropsWithChildren } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./animate-ui/dialog";
 
 type ModalProps = PropsWithChildren<{
   title: string;
+  className?: string;
+  onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   description?: string;
   onClose: () => void;
 }>;
 
-export function Modal({ title, description, onClose, children }: ModalProps) {
+export function Modal({ title, description, onClose, children, className = "", onKeyDown }: ModalProps) {
+  useUpdateBlocker();
   const trigger = useRef(document.activeElement as HTMLElement | null);
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent
-        className="form-dialog"
+        onKeyDown={onKeyDown}
+        className={`form-dialog ${className}`}
         {...(!description ? { "aria-describedby": undefined } : {})}
         onCloseAutoFocus={(event) => {
           event.preventDefault();

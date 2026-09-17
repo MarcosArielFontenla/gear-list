@@ -1,3 +1,4 @@
+import { useUpdateBlocker } from "../../../pwa/service-worker/updateBlocker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -35,7 +36,7 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<RegisterValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -45,6 +46,7 @@ export function RegisterPage() {
       confirmPassword: "",
     },
   });
+  useUpdateBlocker(isDirty || isSubmitting);
 
   if (user) {
     return <Navigate replace to="/" />;

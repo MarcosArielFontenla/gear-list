@@ -1,3 +1,4 @@
+import { useUpdateBlocker } from "../../../pwa/service-worker/updateBlocker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -27,11 +28,12 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
+  useUpdateBlocker(isDirty || isSubmitting);
 
   if (user) {
     const from = (location.state as { from?: string } | null)?.from ?? "/";

@@ -1,3 +1,4 @@
+import { GearItemDetail } from "../../gear-items/components/GearItemDetail";
 import { useConfirm } from "../../../shared/components/ConfirmProvider";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
@@ -27,6 +28,7 @@ export function GearListDetailPage() {
   const summary = useGearListSummary(listId);
   const reorder = useReorderGearItems(listId, accessToken!);
   const { remove } = useGearItemMutations(listId);
+  const [viewingItemId, setViewingItemId] = useState<string | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null | "new">(null);
   const [feedback, setFeedback] = useState<{
     message: string;
@@ -111,6 +113,7 @@ export function GearListDetailPage() {
       ) : (
         <GearItemsBoard
           initialItems={items.data}
+          onOpen={setViewingItemId}
           isSaving={reorder.isPending || !isOnline}
           onDelete={isOnline ? (item) => void handleDelete(item) : undefined}
           onEdit={isOnline ? setEditingItemId : undefined}
@@ -119,6 +122,9 @@ export function GearListDetailPage() {
           }
         />
       )}
+
+      {viewingItemId && <GearItemDetail key={viewingItemId} listId={listId} itemId={viewingItemId}
+        onClose={() => setViewingItemId(null)} onEdit={() => { setEditingItemId(viewingItemId); setViewingItemId(null); }} />}
 
       {editingItemId && (
         <GearItemForm

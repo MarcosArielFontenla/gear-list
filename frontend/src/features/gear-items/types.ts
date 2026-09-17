@@ -22,6 +22,7 @@ export type GearItemListResponse = {
   productUrl: string | null;
   imageUrl: string | null;
   storeName: string | null;
+  photoCount?: number;
   position: number;
   updatedAt: string;
   purchasedAt: string | null;

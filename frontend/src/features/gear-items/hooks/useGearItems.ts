@@ -5,6 +5,7 @@ import { gearListKeys } from "../../gear-lists/api/gearListsApi";
 import { gearItemKeys } from "../api/gearItemKeys";
 import {
   createGearItem,
+  saveGearItemWithPhotos,
   deleteGearItem,
   getGearItem,
   getGearItems,
@@ -66,6 +67,17 @@ export function useGearItemMutations(listId: string) {
     ]);
 
   return {
+    saveWithPhotos: useMutation({
+      mutationFn: ({ itemId, input, photos }: {
+        itemId: string | null;
+        input: GearItemInput | UpdateGearItemInput;
+        photos: import("./useGearItemPhotos").PhotoDraft[];
+      }) => {
+        requireOnline(isOnline);
+        return saveGearItemWithPhotos(listId, itemId, input, photos, accessToken!);
+      },
+      onSuccess: invalidate,
+    }),
     create: useMutation({
       mutationFn: (input: GearItemInput) => {
         requireOnline(isOnline);

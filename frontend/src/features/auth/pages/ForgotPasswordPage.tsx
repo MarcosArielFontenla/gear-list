@@ -1,3 +1,4 @@
+import { useUpdateBlocker } from "../../../pwa/service-worker/updateBlocker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, MailCheck } from "lucide-react";
 import { useState } from "react";
@@ -20,11 +21,12 @@ export function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
+  useUpdateBlocker(isDirty || isSubmitting);
 
   const onSubmit = handleSubmit(async (values) => {
     setApiError(null);

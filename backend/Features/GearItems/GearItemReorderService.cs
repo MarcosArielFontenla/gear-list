@@ -31,7 +31,7 @@ public sealed class GearItemReorderService(
             return GearItemReorderResult.NotFound();
         }
 
-        var currentItems = await database.GearItems
+        var currentItems = await database.GearItems.Include(item => item.Photos)
             .Where(item => item.GearListId == listId)
             .ToListAsync(cancellationToken);
 
@@ -101,7 +101,7 @@ public sealed class GearItemReorderService(
                 return GearItemReorderResult.NotFound();
             }
 
-            var latestItems = await database.GearItems
+            var latestItems = await database.GearItems.Include(item => item.Photos)
                 .AsNoTracking()
                 .Where(item => item.GearListId == listId)
                 .ToListAsync(cancellationToken);
@@ -133,7 +133,8 @@ public sealed class GearItemReorderService(
                 item.Position,
                 item.UpdatedAt,
                 item.PurchasedAt,
-                item.Version))
+                item.Version,
+                item.Photos.Count))
             .ToList();
     }
 

@@ -1,3 +1,4 @@
+using LoadoutQueue.Api.Features.GearItems;
 using System.Collections.Concurrent;
 using LoadoutQueue.Api.Features.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -12,6 +13,8 @@ namespace LoadoutQueue.Api.Tests.Infrastructure;
 public sealed class ApiFactory(string connectionString)
     : WebApplicationFactory<Program>
 {
+    public RecordingPhotoStorage Photos { get; } = new();
+
     private const string TestSigningKey =
         "integration-test-signing-key-with-at-least-32-bytes";
 
@@ -39,6 +42,8 @@ public sealed class ApiFactory(string connectionString)
         });
         builder.ConfigureTestServices(services =>
         {
+            services.RemoveAll<IPhotoStorage>();
+            services.AddSingleton<IPhotoStorage>(Photos);
             services.RemoveAll<IPasswordResetEmailSender>();
             services.AddSingleton<IPasswordResetEmailSender>(
                 PasswordResetEmails);

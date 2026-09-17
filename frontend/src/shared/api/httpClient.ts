@@ -69,7 +69,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const requestHeaders = new Headers(headers);
 
-  if (init.body && !requestHeaders.has("Content-Type")) {
+  if (init.body && !(init.body instanceof FormData) && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json");
   }
 
@@ -83,7 +83,7 @@ export async function apiRequest<T>(
     credentials: "include",
   });
   const contentType = response.headers.get("Content-Type") ?? "";
-  const body = contentType.includes("application/json")
+  const body = (contentType.includes("application/json") || contentType.includes("application/problem+json"))
     ? await response.json()
     : await response.text();
 

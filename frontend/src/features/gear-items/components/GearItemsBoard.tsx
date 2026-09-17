@@ -1,3 +1,4 @@
+import { GearItemCover } from "./GearItemCover";
 import {
   closestCorners,
   DndContext,
@@ -22,7 +23,6 @@ import {
   Edit3,
   ExternalLink,
   GripVertical,
-  ImageOff,
   PackageCheck,
   Store,
   Target,
@@ -48,6 +48,7 @@ type GearItemsBoardProps = {
   onReorder?: (
     items: ReorderGearItemRequest[],
   ) => Promise<GearItemListResponse[] | void>;
+  onOpen?: (itemId: string) => void;
   onEdit?: (itemId: string) => void;
   onDelete?: (item: GearItemListResponse) => void;
 };
@@ -67,6 +68,7 @@ export function GearItemsBoard({
   isSaving = false,
   onReorder,
   onEdit,
+  onOpen,
   onDelete,
 }: GearItemsBoardProps) {
   const [items, setItems] = useState(() => normalizePositions(initialItems));
@@ -186,6 +188,7 @@ export function GearItemsBoard({
               items={items.filter((item) => item.priority === priority)}
               key={priority}
               onDelete={onDelete}
+              onOpen={onOpen}
               onEdit={onEdit}
               priority={priority}
             />
@@ -200,6 +203,7 @@ type PriorityLaneProps = {
   disabled: boolean;
   items: GearItemListResponse[];
   priority: PurchasePriority;
+  onOpen?: (itemId: string) => void;
   onEdit?: (itemId: string) => void;
   onDelete?: (item: GearItemListResponse) => void;
 };
@@ -209,6 +213,7 @@ function PriorityLane({
   items,
   priority,
   onEdit,
+  onOpen,
   onDelete,
 }: PriorityLaneProps) {
   const details = priorityDetails[priority];
@@ -251,6 +256,7 @@ function PriorityLane({
               item={item}
               key={item.id}
               onDelete={onDelete}
+              onOpen={onOpen}
               onEdit={onEdit}
             />
           ))}
@@ -267,6 +273,7 @@ function PriorityLane({
 type SortableGearItemProps = {
   disabled: boolean;
   item: GearItemListResponse;
+  onOpen?: (itemId: string) => void;
   onEdit?: (itemId: string) => void;
   onDelete?: (item: GearItemListResponse) => void;
 };
@@ -275,6 +282,7 @@ function SortableGearItem({
   disabled,
   item,
   onEdit,
+  onOpen,
   onDelete,
 }: SortableGearItemProps) {
   const {
@@ -301,9 +309,9 @@ function SortableGearItem({
       ref={setNodeRef}
       style={style}
     >
-      <div className="gear-card-image" aria-hidden="true">
-        {item.imageUrl ? <img alt="" src={item.imageUrl} /> : <ImageOff />}
-      </div>
+      {onOpen ? <button className="gear-card-image gear-card-open-photo" type="button"
+        aria-label={`Ver fotos de ${item.name}`} onClick={() => onOpen(item.id)}><GearItemCover item={item} /></button>
+        : <div className="gear-card-image" aria-hidden="true"><GearItemCover item={item} /></div>}
       <div className="gear-card-copy">
         <span className="gear-card-topline">
           <span className="gear-icon" aria-hidden="true">
@@ -317,7 +325,9 @@ function SortableGearItem({
             {statusLabels[item.status]}
           </span>
         </span>
-        <span className="gear-card-title" id={`gear-item-${item.id}-title`}>{item.name}</span>
+        {onOpen ? <button className="gear-card-title gear-card-open-name" type="button"
+          id={`gear-item-${item.id}-title`} onClick={() => onOpen(item.id)}>{item.name}</button>
+          : <span className="gear-card-title" id={`gear-item-${item.id}-title`}>{item.name}</span>}
         <span className="gear-card-meta">
           {categoryLabels[item.category]}
         </span>

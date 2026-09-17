@@ -17,10 +17,13 @@ vi.mock("../hooks/useGearItems", () => ({
   useGearItemMutations: () => ({
     create,
     update,
+    saveWithPhotos: { mutateAsync: vi.fn(), isPending: false },
     status: { mutateAsync: vi.fn() },
     remove: { mutateAsync: vi.fn() },
   }),
 }));
+
+vi.mock("../hooks/useGearItemPhotos", () => ({ useGearItemPhotos: () => ({ data: [], isError: false }) }));
 
 vi.mock("../../../pwa/offline/NetworkProvider", () => ({
   useNetwork: () => ({ isOnline: true }),

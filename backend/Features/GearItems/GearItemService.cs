@@ -43,7 +43,8 @@ public sealed class GearItemService(
                 item.Position,
                 item.UpdatedAt,
                 item.PurchasedAt,
-                item.Version))
+                item.Version,
+                item.Photos.Count))
             .ToListAsync(cancellationToken);
     }
 
@@ -78,7 +79,8 @@ public sealed class GearItemService(
                 item.CreatedAt,
                 item.UpdatedAt,
                 item.PurchasedAt,
-                item.Version))
+                item.Version,
+                item.Photos.Count))
             .SingleOrDefaultAsync(cancellationToken);
     }
 
@@ -210,15 +212,16 @@ public sealed class GearItemService(
         Guid itemId,
         CancellationToken cancellationToken)
     {
-        var affectedRows = await database.GearItems
-            .Where(item =>
-                item.Id == itemId &&
-                item.GearListId == listId &&
-                item.GearList.OwnerId == ownerId &&
-                !item.GearList.IsArchived)
-            .ExecuteDeleteAsync(cancellationToken);
-
-        return affectedRows == 1;
+        var item = await FindOwnedItemAsync(ownerId, listId, itemId, cancellationToken);
+        if (item is null) return false;
+        foreach (var photo in item.Photos.Where(p => p.ExternalUrl == null))
+        {
+            database.PhotoDeletions.Add(new PhotoDeletion { ObjectKey = photo.ObjectKey });
+            database.PhotoDeletions.Add(new PhotoDeletion { ObjectKey = photo.ThumbnailKey });
+        }
+        database.GearItems.Remove(item);
+        await database.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     private Task<GearItem?> FindOwnedItemAsync(
@@ -228,6 +231,7 @@ public sealed class GearItemService(
         CancellationToken cancellationToken)
     {
         return database.GearItems
+            .Include(item => item.Photos)
             .SingleOrDefaultAsync(
                 item =>
                     item.Id == itemId &&
@@ -375,7 +379,8 @@ public sealed class GearItemService(
             item.CreatedAt,
             item.UpdatedAt,
             item.PurchasedAt,
-            item.Version);
+            item.Version,
+            item.Photos.Count);
     }
 
     private static string? Normalize(string? value)

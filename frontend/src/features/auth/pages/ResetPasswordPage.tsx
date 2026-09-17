@@ -1,3 +1,4 @@
+import { useUpdateBlocker } from "../../../pwa/service-worker/updateBlocker";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, CheckCircle2, KeyRound } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -34,11 +35,12 @@ export function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   });
+  useUpdateBlocker(isDirty || isSubmitting);
 
   const onSubmit = handleSubmit(async (values) => {
     if (!resetCredentials) {

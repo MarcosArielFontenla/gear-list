@@ -72,6 +72,8 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
+        // The app activates automatically once active editors close.
+        skipWaiting: false,
       },
       devOptions: {
         enabled: false,
